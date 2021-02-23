@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>Basal</title>
+  <!-- adj. forming or belonging to a bottom layer or base. -->
+  <!-- 🚨 NOTE 🚨 -->
+  <!-- This is for instructional purposes. -->
+  <!-- While you can technically use this for an actual website, -->
+  <!-- it serves you best as inspiration. -->
+
+  <!-- Feel free to delete this, just some sane style defaults -->
+  <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
+  
+  <!-- Styles for our different block types -->
+  <style type="text/css">
+    * {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .ChannelInfo {
+      margin: 2em 0;
+      padding: 2em;
+    }
+
+    .Block {
+      margin: 2em 0;
+      padding: 2em;
+      max-width: 50%;
+    }
+
+    .Block__title {
+      display: block;
+      padding-bottom: 0.5em;
+    }
+
+    .BlockInner__Link {
+      font-weight: bold;
+      display: block;
+      font-size: 1.25em;
+    }
+
+    .BlockInner__Text p {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+
+<body></body>
+
+<script type="module">
+  // Add a loading message
+  let loading = `Loading...`;
+  document.body.innerHTML = loading;
+
+  // When everything is ready on the page
+  document.addEventListener('DOMContentLoaded', (event) => {
+    // Replace this with your channel slug 
+    // (i.e. https://www.are.na/meg-miller/good-sign-offs ..the last part)
+    let channelSlug = 'thoughtful-juxtapositions';
+    let URL = `https://api.are.na/v2/channels/${channelSlug}`;
+    
+    // Fetch the channel data from the Are.na API
+    fetch(URL)
+      
+      // Grab the response in JSON
+      .then(response => response.json())
+      
+      // Now we can handle the data but let's format it beforehand
+      .then((data) => {
+
+        // We are going to replace the inner html of our document
+        // with our own constructued HTML
+        document.body.innerHTML = `
+          <div class="ChannelInfo">
+            <h1>${data.title}</h1>
+          </div>
+
+          <div class="ChannelContents">
+            
+            ${data.contents.map((block) => {
+              // First, we will loop through the contents of the channel.
+              // Each block will be an object.
+
+              // An example block:
+              // 
+              // {
+              //   "id": 76969,
+              //   "title": "The Working Sheepdog ( Border Collies ) in training",
+              //   "updated_at": "2020-04-07T21:59:29.806Z",
+              //   "created_at": "2013-02-12T22:40:15.696Z",
+              //   "state": "available",
+              //   "comment_count": 0,
+              //   "generated_title": "The Working Sheepdog ( Border Collies ) in training",
+              //   "content_html": "",
+              //   "description_html": "<p>Border Collie Collies working sheepdog Sheep dogs in training Scotland</p>",
+              //   "visibility": "public",
+              //   "content": "",
+              //   "description": "Border Collie Collies working sheepdog Sheep dogs in training Scotland",
+              //   "source": {},
+              //   "image": {},
+              //   "embed": {},
+              //   "attachment": null,
+              //   "metadata": null,
+              //   "base_class": "Block",
+              //   "class": "Media",
+              //   "user": {},
+              //   "position": 1,
+              //   "selected": false,
+              //   "connection_id": 716562,
+              //   "connected_at": "2016-05-16T00:59:42.901Z",
+              //   "connected_by_user_id": 128,
+              //   "connected_by_username": "Chris   Sherrón",
+              //   "connected_by_user_slug": "chris-sherron"
+              // },
+
+              // Now we are going to return HTML, mixed in with the data from the block.
+              return `
+                <div class="Block ${block.class}">
+
+                  ${(() => {
+                    if (block.title && block.class !== 'Link') {
+                      return `<strong class="Block__title">${block.title}</strong>`;
+                    }
+
+                    return ``;
+                  })()}
+                  
+                  
+                  ${(() => {
+                    // Return a different bit of HTML, depending on what type of block it is
+                    switch (block.class) {
+                      case "Image":
+                        return `
+                          <img
+                            class="BlockInner__Image"
+                            src="${block.image.large.url}"
+                          />
+                      `;
+                      case "Text":
+                        return `<div class="BlockInner__Text">${block.content_html}</div>`;
+                      case "Link":
+                        return `<a href="${block.source.url}" class="BlockInner__Link">${block.title}</a>`;
+                      case "Media":
+                        return `<div class="BlockInner__Media">${block.embed.html}</div>`;
+                    }
+                  })()}
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `
+      })
+    });
+</script>
+</html>
